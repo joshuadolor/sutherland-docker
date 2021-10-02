@@ -1,0 +1,12 @@
+
+.env
+
+slgvars.env
+
+reverse-proxy/*
+
+loi
+nodb
+
+mysql/data
+mysql/logs
