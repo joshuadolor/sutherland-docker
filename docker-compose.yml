@@ -17,10 +17,10 @@ services:
             - PORT=${API_V1_PORT}
             - NODE_ENV=${ENV}
             - CONNECTION_URL=mongodb://db:27017/slg
-        restart: unless-stopped
+        restart: 'no'
 
     api-loi:
-        profiles: ['loi', 'service-loi']
+        profiles: ['loi']
         image: api-loi
         container_name: api-loi
         build:
@@ -33,7 +33,7 @@ services:
         environment:
             - PORT=${API_LOI_V1_PORT}
             - NODE_ENV=${ENV}
-        restart: unless-stopped
+        restart: 'no'
         depends_on:
             - mysql-loi
 
@@ -53,7 +53,7 @@ services:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/portal
             - PORT=${WEB_PORTAL_PORT}
-        restart: unless-stopped
+        restart: 'no'
 
     web-ofac:
         profiles: ['ofac']
@@ -72,10 +72,10 @@ services:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/ofac
             - PORT=${WEB_OFAC_PORT}
-        restart: unless-stopped
+        restart: 'no'
 
     web-loi:
-        profiles: ['loi1']
+        profiles: ['loi']
         image: web-loi
         container_name: web-loi
         build:
@@ -91,7 +91,7 @@ services:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/ofac
             - PORT=${WEB_LOI_PORT}
-        restart: unless-stopped
+        restart: 'no'
 
     web-loi-admin:
         profiles: ['loi']
@@ -109,7 +109,7 @@ services:
         environment:
             - CHOKIDAR_USEPOLLING=true
             - PORT=${WEB_LOI_ADMIN_PORT}
-        restart: unless-stopped
+        restart: 'no'
 
     db:
         image: mongo
@@ -118,13 +118,13 @@ services:
         volumes:
             - ./nodb:/data/db
         command: mongod --quiet --logpath /dev/null
-        restart: unless-stopped
+        restart: 'no'
 
     mysql-loi:
+        profiles: ['loi']
         image: mysql:5.7
-        profiles: ['loi', 'service-loi']
         container_name: mysql-loi
-        restart: unless-stopped
+        restart: 'no'
         ports:
             - 3306:3306
         volumes:
@@ -146,22 +146,24 @@ services:
                 '--max_allowed_packet=104857600',
                 '--innodb_buffer_pool_size=8006926336',
                 '--innodb_log_file_size=134217728',
+                '--explicit_defaults_for_timestamp',
             ]
 
     reverse-proxy:
         image: nginx:1.17.10
         container_name: reverse-proxy
-        depends_on:
-            - api-slg
-            # - web-portal
-            # - web-ofac
-            - db
-            - mysql-loi
+        # depends_on:
+        #     - api-slg
+        #     - web-portal
+        # - web-ofac
+        # - db
+        # - mysql-loi
         environment:
             - API_V1_PORT=${API_V1_PORT}
         volumes:
             - ./reverse-proxy/nginx.conf:/etc/nginx/conf.d/default.conf
+            - ./reverse-proxy/upstream:/etc/nginx/conf.d/upstream
             - ./reverse-proxy/logs:/var/log/nginx
         ports:
             - 80:80
-        restart: unless-stopped
+        restart: 'no'
