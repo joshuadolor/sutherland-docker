@@ -20,7 +20,6 @@ services:
         restart: 'no'
 
     api-loi:
-        profiles: ['loi']
         image: api-loi
         container_name: api-loi
         build:
@@ -56,7 +55,6 @@ services:
         restart: 'no'
 
     web-ofac:
-        profiles: ['ofac']
         image: web-ofac
         container_name: web-ofac
         build:
@@ -75,7 +73,6 @@ services:
         restart: 'no'
 
     web-loi:
-        profiles: ['loi']
         image: web-loi
         container_name: web-loi
         build:
@@ -94,7 +91,6 @@ services:
         restart: 'no'
 
     web-loi-admin:
-        profiles: ['loi']
         image: web-loi-admin
         container_name: web-loi-admin
         build:
@@ -152,12 +148,12 @@ services:
     reverse-proxy:
         image: nginx:1.17.10
         container_name: reverse-proxy
-        # depends_on:
-        #     - api-slg
-        #     - web-portal
-        # - web-ofac
-        # - db
-        # - mysql-loi
+        depends_on:
+            - api-slg
+            - web-portal
+            - web-ofac
+            - db
+            - mysql-loi
         environment:
             - API_V1_PORT=${API_V1_PORT}
         volumes:
