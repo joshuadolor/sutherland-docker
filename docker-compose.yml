@@ -7,10 +7,10 @@ services:
         depends_on:
             - db
         build:
-            context: ../api-slg
+            context: ${API_SLG_PATH}
             dockerfile: ${DOCKERFILE}
         volumes:
-            - ../api-slg:/src
+            - ${API_SLG_PATH}:/src
         ports:
             - ${API_V1_PORT}:${API_V1_PORT}
         environment:
@@ -24,10 +24,10 @@ services:
         image: api-loi
         container_name: api-loi
         build:
-            context: ../api-loi
+            context: ${API_LOI_PATH}
             dockerfile: ${DOCKERFILE}
         volumes:
-            - ../api-loi:/src
+            - ${API_LOI_PATH}:/src
         ports:
             - ${API_LOI_V1_PORT}:${API_LOI_V1_PORT}
         environment:
@@ -41,14 +41,14 @@ services:
         image: web-portal
         container_name: web-portal
         build:
-            context: ../web-portal
+            context: ${WEB_PORTAL_PATH}
             dockerfile: ${DOCKERFILE}
         depends_on:
             - api-slg
         ports:
             - ${WEB_PORTAL_PORT}:${WEB_PORTAL_PORT}
         volumes:
-            - ../web-portal:/src
+            - ${WEB_PORTAL_PATH}:/src
         environment:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/portal
@@ -60,14 +60,14 @@ services:
         image: web-ofac
         container_name: web-ofac
         build:
-            context: ../web-ofac
+            context: ${WEB_OFAC_PATH}
             dockerfile: ${DOCKERFILE}
         depends_on:
             - api-slg
         ports:
             - ${WEB_OFAC_PORT}:${WEB_OFAC_PORT}
         volumes:
-            - ../web-ofac:/src
+            - ${WEB_OFAC_PATH}:/src
         environment:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/ofac
@@ -79,14 +79,14 @@ services:
         image: web-loi
         container_name: web-loi
         build:
-            context: ../web-loi
+            context: ${WEB_LOI_PATH}
             dockerfile: ${DOCKERFILE}
         depends_on:
             - api-slg
         ports:
             - ${WEB_LOI_PORT}:${WEB_LOI_PORT}
         volumes:
-            - ../web-loi:/src
+            - ${WEB_LOI_PATH}:/src
         environment:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/ofac
@@ -98,14 +98,14 @@ services:
         image: web-loi-admin
         container_name: web-loi-admin
         build:
-            context: ../web-loi-admin
+            context: ${WEB_LOI_ADMIN_PATH}
             dockerfile: ${DOCKERFILE}
         depends_on:
             - api-slg
         ports:
             - ${WEB_LOI_ADMIN_PORT}:${WEB_LOI_ADMIN_PORT}
         volumes:
-            - ../web-loi-admin:/src
+            - ${WEB_LOI_ADMIN_PATH}:/src
         environment:
             - CHOKIDAR_USEPOLLING=true
             - PORT=${WEB_LOI_ADMIN_PORT}
