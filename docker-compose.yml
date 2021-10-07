@@ -160,5 +160,5 @@ services:
             - ./reverse-proxy/upstream:/etc/nginx/conf.d/upstream
             - ./reverse-proxy/logs:/var/log/nginx
         ports:
-            - 80:80
+            - ${PROXY_EXPOSE_PORT}:80
         restart: 'no'
