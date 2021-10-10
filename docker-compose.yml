@@ -19,22 +19,22 @@ services:
             - CONNECTION_URL=mongodb://db:27017/slg
         restart: 'no'
 
-    api-loi:
-        image: api-loi
-        container_name: api-loi
-        build:
-            context: ${API_LOI_PATH}
-            dockerfile: ${DOCKERFILE}
-        volumes:
-            - ${API_LOI_PATH}:/src
-        ports:
-            - ${API_LOI_V1_PORT}:${API_LOI_V1_PORT}
-        environment:
-            - PORT=${API_LOI_V1_PORT}
-            - NODE_ENV=${ENV}
-        restart: 'no'
-        depends_on:
-            - mysql-loi
+    # api-loi:
+    #     image: api-loi
+    #     container_name: api-loi
+    #     build:
+    #         context: ${API_LOI_PATH}
+    #         dockerfile: ${DOCKERFILE}
+    #     volumes:
+    #         - ${API_LOI_PATH}:/src
+    #     ports:
+    #         - ${API_LOI_V1_PORT}:${API_LOI_V1_PORT}
+    #     environment:
+    #         - PORT=${API_LOI_V1_PORT}
+    #         - NODE_ENV=${ENV}
+    #     restart: 'no'
+    #     depends_on:
+    #         - mysql-loi
 
     web-portal:
         image: web-portal
@@ -47,7 +47,7 @@ services:
         ports:
             - ${WEB_PORTAL_PORT}:${WEB_PORTAL_PORT}
         volumes:
-            - ${WEB_PORTAL_PATH}:/src
+            - ${WEB_PORTAL_PATH}/dist:/usr/share/nginx/html
         environment:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/portal
@@ -65,7 +65,7 @@ services:
         ports:
             - ${WEB_OFAC_PORT}:${WEB_OFAC_PORT}
         volumes:
-            - ${WEB_OFAC_PATH}:/src
+            - ${WEB_OFAC_PATH}/dist:/usr/share/nginx/html
         environment:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/ofac
@@ -83,7 +83,7 @@ services:
         ports:
             - ${WEB_LOI_PORT}:${WEB_LOI_PORT}
         volumes:
-            - ${WEB_LOI_PATH}:/src
+            - ${WEB_LOI_PATH}/dist:/usr/share/nginx/html
         environment:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/ofac
@@ -101,7 +101,7 @@ services:
         ports:
             - ${WEB_LOI_ADMIN_PORT}:${WEB_LOI_ADMIN_PORT}
         volumes:
-            - ${WEB_LOI_ADMIN_PATH}:/src
+            - ${WEB_LOI_ADMIN_PATH}/dist:/usr/share/nginx/html
         environment:
             - CHOKIDAR_USEPOLLING=true
             - PORT=${WEB_LOI_ADMIN_PORT}
@@ -116,43 +116,43 @@ services:
         command: mongod --quiet --logpath /dev/null
         restart: 'no'
 
-    mysql-loi:
-        image: mysql:5.7
-        container_name: mysql-loi
-        restart: 'no'
-        ports:
-            - 3306:3306
-        volumes:
-            - ${MYSQL_DATA_DIR-./mysql/data/mysql}:/var/lib/mysql
-            - ${MYSQL_LOG_DIR-./mysql/logs/mysql}:/var/log/mysql
-        environment:
-            - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-            - MYSQL_ROOT_PASSWORD=
-            - MYSQL_PASSWORD=
-            - MYSQL_ROOT_HOST=%
-            - TZ=Asia/Singapore
-        command:
-            [
-                'mysqld',
-                '--wait_timeout=28800',
-                '--character-set-server=latin1',
-                '--collation-server=latin1_swedish_ci',
-                '--innodb_use_native_aio=0',
-                '--max_allowed_packet=104857600',
-                '--innodb_buffer_pool_size=8006926336',
-                '--innodb_log_file_size=134217728',
-                '--explicit_defaults_for_timestamp',
-            ]
+    # mysql-loi:
+    #     image: mysql:5.7
+    #     container_name: mysql-loi
+    #     restart: 'no'
+    #     ports:
+    #         - 3306:3306
+    #     volumes:
+    #         - ${MYSQL_DATA_DIR-./mysql/data/mysql}:/var/lib/mysql
+    #         - ${MYSQL_LOG_DIR-./mysql/logs/mysql}:/var/log/mysql
+    #     environment:
+    #         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    #         - MYSQL_ROOT_PASSWORD=
+    #         - MYSQL_PASSWORD=
+    #         - MYSQL_ROOT_HOST=%
+    #         - TZ=Asia/Singapore
+    #     command:
+    #         [
+    #             'mysqld',
+    #             '--wait_timeout=28800',
+    #             '--character-set-server=latin1',
+    #             '--collation-server=latin1_swedish_ci',
+    #             '--innodb_use_native_aio=0',
+    #             '--max_allowed_packet=104857600',
+    #             '--innodb_buffer_pool_size=8006926336',
+    #             '--innodb_log_file_size=134217728',
+    #             '--explicit_defaults_for_timestamp',
+    #         ]
 
     reverse-proxy:
         image: nginx:1.17.10
         container_name: reverse-proxy
-        depends_on:
-            - api-slg
-            - web-portal
-            - web-ofac
-            - db
-            - mysql-loi
+        # depends_on:
+        # - api-slg
+        # - web-portal
+        # - web-ofac
+        # - db
+        # - mysql-loi
         environment:
             - API_V1_PORT=${API_V1_PORT}
         volumes:
