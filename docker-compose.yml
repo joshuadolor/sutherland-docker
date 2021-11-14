@@ -5,7 +5,7 @@ services:
         image: api-slg
         container_name: api-slg
         depends_on:
-            - db
+            - db-portal
         build:
             context: ${API_SLG_PATH}
             dockerfile: ${DOCKERFILE}
@@ -16,7 +16,7 @@ services:
         environment:
             - PORT=${API_V1_PORT}
             - NODE_ENV=${ENV}
-            - CONNECTION_URL=mongodb://db:27017/slg
+            - CONNECTION_URL=mongodb://db-portal:27017/slg
         restart: 'no'
 
     api-loi:
@@ -31,10 +31,12 @@ services:
             - ${API_LOI_V1_PORT}:${API_LOI_V1_PORT}
         environment:
             - PORT=${API_LOI_V1_PORT}
+            - CONNECTION_URL=mongodb://db-loi:${DB_LOI_PORT}/loi
             - NODE_ENV=${ENV}
         restart: 'no'
         depends_on:
-            - mysql-loi
+            # - mysql-loi
+            - db-loi
 
     web-portal:
         image: web-portal
@@ -107,52 +109,44 @@ services:
             - PORT=${WEB_LOI_ADMIN_PORT}
         restart: 'no'
 
-    db:
+    db-portal:
+        container_name: db-portal
         image: mongo
         ports:
             - 27018:27017
         volumes:
-            - ./nodb:/data/db
+            - ./portal/mongodb/mongod.conf:/etc/mongod.conf
+            - ./portal/mongodb/initdb.d/:/docker-entrypoint-initdb.d/
+            - ./portal/mongodb/data/db/:/data/db/
+            - ./portal/mongodb/data/log/:/var/log/mongodb/
         command: mongod --quiet --logpath /dev/null
         restart: 'no'
-
-    mysql-loi:
-        image: mysql:5.7
-        container_name: mysql-loi
-        restart: 'no'
+        
+    db-loi:
+        container_name: db-loi
+        image: mongo
         ports:
-            - 3306:3306
+            - ${DB_LOI_PORT}:${DB_LOI_PORT}
         volumes:
-            - ${MYSQL_DATA_DIR-./mysql/data/mysql}:/var/lib/mysql
-            - ${MYSQL_LOG_DIR-./mysql/logs/mysql}:/var/log/mysql
-        environment:
-            - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-            - MYSQL_ROOT_PASSWORD=
-            - MYSQL_PASSWORD=
-            - MYSQL_ROOT_HOST=%
-            - TZ=Asia/Singapore
-        command:
-            [
-                'mysqld',
-                '--wait_timeout=28800',
-                '--character-set-server=latin1',
-                '--collation-server=latin1_swedish_ci',
-                '--innodb_use_native_aio=0',
-                '--max_allowed_packet=104857600',
-                '--innodb_buffer_pool_size=8006926336',
-                '--innodb_log_file_size=134217728',
-                '--explicit_defaults_for_timestamp',
-            ]
+            - ./loi/mongodb/mongod.conf:/etc/mongod.conf
+            - ./loi/mongodb/initdb.d/:/docker-entrypoint-initdb.d/
+            - ./loi/mongodb/data/db/:/data/db/
+            - ./loi/mongodb/data/log/:/var/log/mongodb/
+        command: mongod --port ${DB_LOI_PORT} --quiet --logpath /dev/null
+        restart: 'no'
 
     reverse-proxy:
         image: nginx:1.17.10
         container_name: reverse-proxy
         depends_on:
             - api-slg
+            - api-loi
             - web-portal
             - web-ofac
-            - db
-            - mysql-loi
+            - web-loi
+            - web-loi-admin
+            - db-portal
+            - db-loi
         environment:
             - API_V1_PORT=${API_V1_PORT}
         volumes:
