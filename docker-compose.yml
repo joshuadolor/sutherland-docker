@@ -35,8 +35,25 @@ services:
             - NODE_ENV=${ENV}
         restart: 'no'
         depends_on:
-            # - mysql-loi
             - db-loi
+    
+    api-onboarding:
+        image: api-onboarding
+        container_name: api-onboarding
+        build:
+            context: ${API_ONBOARDING_PATH}
+            dockerfile: ${DOCKERFILE}
+        volumes:
+            - ${API_ONBOARDING_PATH}:/src
+        ports:
+            - ${API_ONBOARDING_V1_PORT}:${API_ONBOARDING_V1_PORT}
+        environment:
+            - PORT=${API_ONBOARDING_V1_PORT}
+            - CONNECTION_URL=mongodb://db-onboarding:${DB_ONBOARDING_PORT}/onboarding
+            - NODE_ENV=${ENV}
+        restart: 'no'
+        depends_on:
+            - db-onboarding
 
     web-portal:
         image: web-portal
@@ -72,6 +89,42 @@ services:
             - CHOKIDAR_USEPOLLING=true
             - APP_HOSTNAME=${HOSTNAME}/ofac
             - PORT=${WEB_OFAC_PORT}
+        restart: 'no'
+
+    web-onboarding-candidate:
+        image: web-onboarding-candidate
+        container_name: web-onboarding-candidate
+        build:
+            context: ${WEB_ONBOARDING_REQUIREMENT_PATH}
+            dockerfile: ${DOCKERFILE}
+        depends_on:
+            - api-onboarding
+        ports:
+            - ${WEB_ONBOARDING_REQUIREMENT_PORT}:${WEB_ONBOARDING_REQUIREMENT_PORT}
+        volumes:
+            - ${WEB_ONBOARDING_REQUIREMENT_PATH}/dist:/usr/share/nginx/html
+        environment:
+            - CHOKIDAR_USEPOLLING=true
+            - APP_HOSTNAME=${HOSTNAME}/candidate-requirements
+            - PORT=${WEB_ONBOARDING_REQUIREMENT_PORT}
+        restart: 'no'
+
+    web-onboarding:
+        image: web-onboarding
+        container_name: web-onboarding
+        build:
+            context: ${WEB_ONBOARDING_ADMIN_PATH}
+            dockerfile: ${DOCKERFILE}
+        depends_on:
+            - api-onboarding
+        ports:
+            - ${WEB_ONBOARDING_ADMIN_PORT}:${WEB_ONBOARDING_ADMIN_PORT}
+        volumes:
+            - ${WEB_ONBOARDING_ADMIN_PATH}/dist:/usr/share/nginx/html
+        environment:
+            - CHOKIDAR_USEPOLLING=true
+            - APP_HOSTNAME=${HOSTNAME}/candidate-requirements
+            - PORT=${WEB_ONBOARDING_ADMIN_PORT}
         restart: 'no'
 
     web-loi:
@@ -133,6 +186,19 @@ services:
             - ./loi/mongodb/data/db/:/data/db/
             - ./loi/mongodb/data/log/:/var/log/mongodb/
         command: mongod --port ${DB_LOI_PORT} --quiet --logpath /dev/null
+        restart: 'no'
+
+    db-onboarding:
+        container_name: db-onboarding
+        image: mongo
+        ports:
+            - ${DB_ONBOARDING_PORT}:${DB_ONBOARDING_PORT}
+        volumes:
+            - ./mongodb/onboarding/mongod.conf:/etc/mongod.conf
+            - ./mongodb/onboarding/initdb.d/:/docker-entrypoint-initdb.d/
+            - ./mongodb/onboarding/data/db/:/data/db/
+            - ./mongodb/onboarding/data/log/:/var/log/mongodb/
+        command: mongod --port ${DB_ONBOARDING_PORT} --quiet --logpath /dev/null
         restart: 'no'
 
     reverse-proxy:

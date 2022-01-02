@@ -12,3 +12,5 @@ mysql/data
 mysql/logs
 
 portal
+
+mongodb
