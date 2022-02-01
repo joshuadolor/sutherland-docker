@@ -55,6 +55,23 @@ services:
         depends_on:
             - db-onboarding
 
+    api-id-validator:
+        image: api-id-validator
+        container_name: api-id-validator
+        build:
+            context: ${API_ID_VALIDATOR_PATH}
+            dockerfile: ${DOCKERFILE}
+        volumes:
+            - ${API_ID_VALIDATOR_PATH}:/src
+        ports:
+            - ${API_ID_VALIDATOR_V1_PORT}:${API_ID_VALIDATOR_V1_PORT}
+        environment:
+            - PORT=${API_ID_VALIDATOR_V1_PORT}
+            - NODE_ENV=${ENV}
+        restart: 'no'
+        depends_on:
+            - db-onboarding
+
     web-portal:
         image: web-portal
         container_name: web-portal
@@ -160,6 +177,24 @@ services:
         environment:
             - CHOKIDAR_USEPOLLING=true
             - PORT=${WEB_LOI_ADMIN_PORT}
+        restart: 'no'
+
+    web-id-validator:
+        image: web-id-validator
+        container_name: web-id-validator
+        build:
+            context: ${WEB_ID_VALIDATOR_PATH}
+            dockerfile: ${DOCKERFILE}
+        depends_on:
+            - api-slg
+        ports:
+            - ${WEB_ID_VALIDATOR_PORT}:${WEB_ID_VALIDATOR_PORT}
+        volumes:
+            - ${WEB_ID_VALIDATOR_PATH}/dist:/usr/share/nginx/html
+        environment:
+            - CHOKIDAR_USEPOLLING=true
+            - APP_HOSTNAME=${HOSTNAME}/id-validator
+            - PORT=${WEB_ID_VALIDATOR_PORT}
         restart: 'no'
 
     db-portal:
